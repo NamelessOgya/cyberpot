@@ -23,10 +23,7 @@
   
 pythonファイルをGCEインスタンス内にアップロード  
 python ファイルを実行すると、パイプラインが周り前処理→学習→テストが回る。  
-- python3 cyberpot.py
-- pip install kfp
-python ファイルを実行すると、パイプラインが周り前処理→学習→テストが回る。  
-- 
+- python3 cyberpot.py 
   
 ## 今後のtodo
 - 学習時のインスタンスタイプ、指定できるように
