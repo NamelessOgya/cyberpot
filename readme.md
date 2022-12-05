@@ -11,6 +11,7 @@
 ## GCS
 - 以下をバケット配下に
   - code/ data/ pipeline_log/ result
+    - 学習データはzip圧縮してるので解凍お願いします。
 
 ## 実行
 下記はインストール必要  
