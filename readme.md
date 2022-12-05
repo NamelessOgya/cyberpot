@@ -19,9 +19,9 @@
 - pip3 install --upgrade google-api-python-client
 - pip install --upgrade google-cloud-storage
 - pip install --upgrade google-cloud-aiplatform
-
-python ファイルを実行すると、パイプラインが周り前処理→学習→テストが回る。  
 - pip install kfp
+python ファイルを実行すると、パイプラインが周り前処理→学習→テストが回る。  
+- 
   
 ## 今後のtodo
 - 学習時のインスタンスタイプ、指定できるように
