@@ -16,7 +16,7 @@ from kfp.v2.dsl import (Artifact, Dataset, Input, InputPath, Model, Output,
                         OutputPath, component)
 
 
-### この部分で学習ファイルをロード ##############
+### 学習に必要なパラメータ。いずれはコマンドラインから取れるように。 ##############
 params = {
     "project_id": "test-hyron",
     "bucket_name": "aruha-mnist",
@@ -36,6 +36,10 @@ params = {
     "epochs" : 5,
     "batch_size" : 32
 }
+############################################################################
+
+### GCSから学習用のコードをDL ########################
+### もっといい方法あれば... ##########################
 
 project_id = params["project_id"]
 client = gcs.Client(params["project_id"])
@@ -51,9 +55,7 @@ data_load_from_url(params["code_url"])
 
 import sys
 from components_script import preprocess, train_model, test_model
-
-
-from kfp.v2 import compiler  # noqa: F811
+from kfp.v2 import compiler  
 
 
 # パイプラインを定義
@@ -79,7 +81,7 @@ def pipeline(
     batch_size: int,
     epochs : int
 ):
-    # データの前処理など
+    # データの前処理など行う
     preprocess_task = preprocess(
         project_id, 
         bucket_name, 
@@ -89,7 +91,7 @@ def pipeline(
     )
     
     
-    # モデルのtrain
+    # モデルのtrainを行う
     train_model_task = train_model(
         train_dataset = preprocess_task.outputs["train_dataset"],
         valid_dataset = preprocess_task.outputs["valid_dataset"],
@@ -98,7 +100,7 @@ def pipeline(
         epochs        = epochs
     )
 
-    # モデルのtest
+    # モデルのtestを行う
     test_model_task = test_model(
         test_dataset = preprocess_task.outputs["test_dataset"], 
         model        = train_model_task.outputs["model"],

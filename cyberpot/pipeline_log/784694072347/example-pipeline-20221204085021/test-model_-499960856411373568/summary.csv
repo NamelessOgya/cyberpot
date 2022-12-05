@@ -1,0 +1,2 @@
+timestamp,model_version,param_1,accuracy,loss
+20221204085018,mnist_cnn,1.0,0.972000002861023,0.1161964014172554
