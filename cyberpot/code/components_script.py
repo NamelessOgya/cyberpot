@@ -42,7 +42,7 @@ def preprocess(
     np.random.shuffle(train)
     np.random.shuffle(test)
     
-    #時間短縮のため
+    #時間短縮のため参照するデータを少なく
     train = train[:10000]
     test = test[:1000]
 
@@ -51,6 +51,7 @@ def preprocess(
     test_data   = test
     
     #ファイルの受け渡しはsave / loadによってなされる。kubeflowは保存場所を提供しているにすぎない。
+    #kubeflowの提供した場所にmodelを保存
     _train_dataset = tf.data.Dataset.from_tensor_slices(( train_data[:, 1:]/255.0, train_data[:, 0].reshape(-1, 1)))
     _test_dataset = tf.data.Dataset.from_tensor_slices(( test_data[:, 1:]/255.0, test_data[:, 0].reshape(-1, 1)))
     _valid_dataset = tf.data.Dataset.from_tensor_slices(( valid_data[:, 1:]/255.0, valid_data[:, 0].reshape(-1, 1)))
@@ -130,18 +131,22 @@ def train_model(
         
         
 
-@component(base_image='tensorflow/tensorflow:latest')
+@component(
+    base_image='tensorflow/tensorflow:latest',
+    packages_to_install=['pandas']
+    )
 def test_model(
     test_dataset: Input[Dataset], 
     model       : Input[Artifact],
-    TIMESTAMP   : str,
+    #TIMESTAMP   : str,
     model_name  : str,
     param_1     : float,
     
-    summary     : Output[Dataset]
+    result     : Output[Dataset]
 ):
     import tensorflow as tf
     import numpy as np
+    import pandas as pd
     
     _test_dataset = tf.data.Dataset.load(test_dataset.path)
     
@@ -150,13 +155,69 @@ def test_model(
     _loss, _accuracy = _model.evaluate(_test_dataset)
     
     
-    base_ = np.array([["timestamp", "model_version", "param_1", "accuracy", "loss"]])
-    result = np.array([[TIMESTAMP, model_name, param_1,  _accuracy, _loss]])
-    result = np.concatenate([base_, result])
+    #base_ = np.array([["param_1", "accuracy", "loss"]])
+    result_df = np.array([[param_1,  _accuracy, _loss]])
+    result_df = pd.DataFrame(result_df, columns = ["param_1", "accuracy", "loss"])
     
-    np.savetxt(summary.path + ".csv", result, fmt="%s", delimiter=',')
+    result_df.to_csv(result.path)
+#    np.savetxt(summary.path + ".csv", result, fmt="%s", delimiter=',')
 #     with open(loss.path, "w") as f:
 #         f.write(str(_loss))
         
 #     with open(accuracy.path, "w") as f:
 #         f.write(str(_accuracy))
+
+
+#### 以下共通部分
+@component(
+    base_image='tensorflow/tensorflow:latest',
+    packages_to_install=['pandas', 'google-cloud-bigquery']
+    )
+def export_to_bq(
+    project_id: str,
+    experiment_id: str, 
+    timestamp   : str, 
+    target_table: str,
+
+    result :Input[Dataset]
+):
+    from google.cloud import bigquery
+    import numpy as np
+    import pandas as pd
+
+    client = bigquery.Client(project = project_id)
+    
+    # experiment_idとtsを付与
+    dataframe = pd.read_csv(result.path, index_col = 0)
+
+    dataframe.insert(0, "experiment_id", experiment_id)
+    dataframe.insert(0, "timestamp", timestamp)
+    
+    
+    bq_coltypes = []
+    
+    # カラム情報をまとめる。
+    for col_name, dtype in zip(dataframe.columns, dataframe.dtypes):
+
+        if dtype == np.object_:
+            bq_coltypes.append(bigquery.SchemaField(col_name, bigquery.enums.SqlTypeNames.STRING))
+            #sample_result[col_name] = sample_result[col_name].astype(str)
+
+        elif dtype == np.int64:
+            bq_coltypes.append(bigquery.SchemaField(col_name, bigquery.enums.SqlTypeNames.INTEGER))
+
+        elif dtype == np.float64:
+            bq_coltypes.append(bigquery.SchemaField(col_name, bigquery.enums.SqlTypeNames.FLOAT))
+
+        else:
+            #日付系はいっぱいあってしんどいので例外処理
+            bq_coltypes.append(bigquery.SchemaField(col_name, bigquery.enums.SqlTypeNames.TIMESTAMP))
+    
+    
+    job_config = bigquery.LoadJobConfig(
+        schema = bq_coltypes
+    )
+    
+    job = client.load_table_from_dataframe(
+        dataframe, target_table, job_config = job_config
+    )    

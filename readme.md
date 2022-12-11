@@ -13,12 +13,22 @@
   - code/ data/ pipeline_log/ result
     - 学習データはzip圧縮してるので解凍お願いします。
 
+### 権限  
+  - BigQuery ジョブユーザー
+  - BigQuery データオーナー
+  - BigQuery データ編集者
+  - BigQuery 管理者
+  - Vertex AI Custom Code サービス エージェント
+  - Vertex AI ユーザー
+  - サービス アカウント ユーザー
+
 ### 実行
 下記はインストール必要  
 - sudo apt install python3-pip
 - pip3 install --upgrade google-api-python-client
 - pip install --upgrade google-cloud-storage
 - pip install --upgrade google-cloud-aiplatform
+- pip install --upgrade google-cloud-bigquery
 - pip install kfp  
   
 pythonファイルをGCEインスタンス内にアップロード  
@@ -30,3 +40,4 @@ python ファイルを実行すると、パイプラインが周り前処理→�
 - 学習モードてとテストモードの分割
 - パラメータをコマンドラインから指定できるように
 - BQとの連携
+
