@@ -34,9 +34,10 @@ parser.add_argument("--model_name")
 parser.add_argument("--valid_proportion")
 parser.add_argument("--epochs")
 parser.add_argument("--batch_size")
+parser.add_argument("--gpu_limit")
+parser.add_argument("--gpu_type")
 
 args = parser.parse_args()
-
 
 ### 最終的にはパイプライン形式でわたすので辞書で管理 ##############
 params = {
@@ -57,7 +58,10 @@ params = {
     "timestamp": TIMESTAMP,
     
     "epochs" : int(args.epochs),
-    "batch_size" : int(args.batch_size)
+    "batch_size" : int(args.batch_size),
+    
+    "gpu_limit":int(args.gpu_limit),
+    "gpu_type":args.gpu_type
 }
 ############################################################################
 
@@ -105,8 +109,12 @@ def pipeline(
     epochs : int,
 
     DISPLAY_NAME:str,
-    target_table:str
+    target_table:str,
+
+    gpu_limit:int,
+    gpu_type:str
 ):
+
     # データの前処理など行う
     preprocess_task = preprocess(
         project_id, 
@@ -124,7 +132,7 @@ def pipeline(
 
         batch_size    = batch_size,
         epochs        = epochs
-    )
+    ).add_node_selector_constraint(label_name = 'cloud.google.com/gke-accelerator', value = gpu_type).set_gpu_limit(gpu_limit)
 
     # モデルのtestを行う
     test_model_task = test_model(
@@ -132,7 +140,7 @@ def pipeline(
         model        = train_model_task.outputs["model"],
         model_name = model_name,
         param_1    =  1.0,
-    )
+    ).add_node_selector_constraint(label_name = 'cloud.google.com/gke-accelerator', value = gpu_type).set_gpu_limit(gpu_limit)
 
     bq_export_task = export_to_bq(
         project_id = project_id,

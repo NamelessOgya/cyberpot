@@ -48,6 +48,8 @@ python3 cyberpot.py \
 --valid_proportion 0.2 \
 --epochs  5 \
 --batch_size  32
+--gpu_limit 1 \
+--gpu_type NVIDIA_TESLA_T4
 ```
   
 ## 今後のtodo
