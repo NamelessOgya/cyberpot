@@ -39,7 +39,7 @@ parser.add_argument("--gpu_type")
 
 args = parser.parse_args()
 
-### 最終的にはパイプライン形式でわたすので辞書で管理 ##############
+### 最終的には辞書形式でパイプラインにわたすので辞書で管理 ##############
 params = {
     "project_id": args.project_id,
     "bucket_name": args.bucket_name,
