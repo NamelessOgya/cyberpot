@@ -33,11 +33,26 @@
   
 pythonファイルをGCEインスタンス内にアップロード  
 python ファイルを実行すると、パイプラインが周り前処理→学習→テストが回る。  
-- python3 cyberpot.py 
+
+```
+python3 cyberpot.py \
+--project_id [project_id] \
+--bucket_name [bucket_name] \
+--target_table [project_id].mnist.result \
+--pipeline_root gs://[bucket_name]/pipeline_log \
+--model_url gs://[bucket_name]/model \
+--code_url gs://[bucket_name]/code/components_script.py \
+--train_url gs://[bucket_name]/data/mnist_train.csv \
+--test_url gs://[bucket_name]/data/mnist_test.csv \
+--model_name  mnist_cnn \
+--valid_proportion 0.2 \
+--epochs  5 \
+--batch_size  32
+```
   
 ## 今後のtodo
 - 学習時のインスタンスタイプ、指定できるように
 - 学習モードてとテストモードの分割
-- パラメータをコマンドラインから指定できるように
-- BQとの連携
+- パラメータをコマンドラインから指定できるように(対応完了！)
+- BQとの連携(対応完了!)
 

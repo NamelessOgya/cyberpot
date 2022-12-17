@@ -18,27 +18,46 @@ from kfp.v2 import dsl
 from kfp.v2.dsl import (Artifact, Dataset, Input, InputPath, Model, Output,
                         OutputPath, component)
 
+import argparse
 
-### 学習に必要なパラメータ。いずれはコマンドラインから取れるように。 ##############
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--project_id")
+parser.add_argument("--bucket_name")
+parser.add_argument("--target_table")
+parser.add_argument("--pipeline_root")
+parser.add_argument("--model_url")
+parser.add_argument("--code_url")
+parser.add_argument("--train_url")
+parser.add_argument("--test_url")
+parser.add_argument("--model_name")
+parser.add_argument("--valid_proportion")
+parser.add_argument("--epochs")
+parser.add_argument("--batch_size")
+
+args = parser.parse_args()
+
+
+### 最終的にはパイプライン形式でわたすので辞書で管理 ##############
 params = {
-    "project_id": "test-hyron",
-    "bucket_name": "aruha-mnist",
-    "target_table": "test-hyron.mnist.result",
+    "project_id": args.project_id,
+    "bucket_name": args.bucket_name,
+    "target_table": args.target_table,
 
-    "pipeline_root": "gs://aruha-mnist/pipeline_log", 
+    "pipeline_root": args.pipeline_root, 
     
-    "model_url": "gs://aruha-mnist/model",
-    "code_url": "gs://aruha-mnist/code/components_script.py",
+    "model_url": args.model_url,
+    "code_url":  args.code_url,
     #"result_url":"gs://aruha-mnist/result/result.csv",
     
-    "train_url":"gs://aruha-mnist/data/mnist_train.csv",
-    "test_url" :"gs://aruha-mnist/data/mnist_test.csv",
-    "model_name" : "mnist_cnn",
-    "valid_proportion": 0.2,
+    "train_url":args.train_url,
+    "test_url" :args.test_url,
+    "model_name" : args.model_name,
+    "valid_proportion": float(args.valid_proportion),
     "timestamp": TIMESTAMP,
     
-    "epochs" : 5,
-    "batch_size" : 32
+    "epochs" : int(args.epochs),
+    "batch_size" : int(args.batch_size)
 }
 ############################################################################
 

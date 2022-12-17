@@ -171,7 +171,7 @@ def test_model(
 #### 以下共通部分
 @component(
     base_image='tensorflow/tensorflow:latest',
-    packages_to_install=['pandas', 'google-cloud-bigquery']
+    packages_to_install=['pandas', 'google-cloud-bigquery', 'pyarrow']
     )
 def export_to_bq(
     project_id: str,
